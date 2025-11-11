@@ -244,6 +244,19 @@
     </div>
 
     <script>
+        // ==================== UTILIDADES ====================
+        
+        // Función para escapar HTML y prevenir XSS
+        function escapeHtml(unsafe) {
+            if (typeof unsafe !== 'string') return unsafe;
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
         // ==================== MODELO ====================
         
         // Películas iniciales por defecto
@@ -333,10 +346,12 @@
             html += '<div class="movie-grid">';
             
             peliculas.forEach((pelicula, index) => {
+                const tituloEscapado = escapeHtml(pelicula.titulo);
+                const miniaturaEscapada = escapeHtml(pelicula.miniatura);
                 html += `
                     <div class="movie-card">
-                        <img src="${pelicula.miniatura}" alt="${pelicula.titulo}">
-                        <h3>${pelicula.titulo}</h3>
+                        <img src="${miniaturaEscapada}" alt="${tituloEscapado}">
+                        <h3>${tituloEscapado}</h3>
                         <div class="movie-actions">
                             <button class="btn-show show" data-my-id="${index}">👁️ Ver</button>
                             <button class="btn-edit edit" data-my-id="${index}">✏️ Editar</button>
@@ -353,11 +368,15 @@
 
         // Vista de detalle: muestra información completa de una película
         function showView(pelicula) {
+            const tituloEscapado = escapeHtml(pelicula.titulo);
+            const directorEscapado = escapeHtml(pelicula.director);
+            const miniaturaEscapada = escapeHtml(pelicula.miniatura);
+            
             const html = `
                 <div class="movie-detail">
-                    <img src="${pelicula.miniatura}" alt="${pelicula.titulo}">
-                    <h2>${pelicula.titulo}</h2>
-                    <p><strong>Director:</strong> ${pelicula.director}</p>
+                    <img src="${miniaturaEscapada}" alt="${tituloEscapado}">
+                    <h2>${tituloEscapado}</h2>
+                    <p><strong>Director:</strong> ${directorEscapado}</p>
                     <button class="btn-back index">⬅️ Volver</button>
                 </div>
             `;
@@ -367,20 +386,24 @@
 
         // Vista de edición: formulario para editar una película
         function editView(index, pelicula) {
+            const tituloEscapado = escapeHtml(pelicula.titulo);
+            const directorEscapado = escapeHtml(pelicula.director);
+            const miniaturaEscapada = escapeHtml(pelicula.miniatura);
+            
             const html = `
                 <div class="form-container">
                     <h2>Editar Película</h2>
                     <div class="form-group">
                         <label for="titulo">Título:</label>
-                        <input type="text" id="titulo" value="${pelicula.titulo}" required>
+                        <input type="text" id="titulo" value="${tituloEscapado}" required>
                     </div>
                     <div class="form-group">
                         <label for="director">Director:</label>
-                        <input type="text" id="director" value="${pelicula.director}" required>
+                        <input type="text" id="director" value="${directorEscapado}" required>
                     </div>
                     <div class="form-group">
                         <label for="miniatura">URL Miniatura:</label>
-                        <input type="text" id="miniatura" value="${pelicula.miniatura}" required>
+                        <input type="text" id="miniatura" value="${miniaturaEscapada}" required>
                     </div>
                     <div class="form-actions">
                         <button class="btn-update update" data-my-id="${index}">💾 Actualizar</button>

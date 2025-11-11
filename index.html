@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Películas - Nuestro Netflix</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        #main {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .movie-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .movie-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+
+        .movie-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        .movie-card img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .movie-card h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        .movie-actions {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+        }
+
+        .btn-show {
+            background-color: #17a2b8;
+            color: white;
+        }
+
+        .btn-show:hover {
+            background-color: #138496;
+        }
+
+        .btn-edit {
+            background-color: #ffc107;
+            color: #333;
+        }
+
+        .btn-edit:hover {
+            background-color: #e0a800;
+        }
+
+        .btn-delete {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background-color: #c82333;
+        }
+
+        .btn-new {
+            background-color: #28a745;
+            color: white;
+            padding: 12px 24px;
+            font-size: 16px;
+        }
+
+        .btn-new:hover {
+            background-color: #218838;
+        }
+
+        .btn-reset {
+            background-color: #6c757d;
+            color: white;
+            padding: 12px 24px;
+            font-size: 16px;
+        }
+
+        .btn-reset:hover {
+            background-color: #5a6268;
+        }
+
+        .btn-back {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .btn-back:hover {
+            background-color: #5a6268;
+        }
+
+        .btn-update {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .btn-update:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-create {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .btn-create:hover {
+            background-color: #218838;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .form-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .movie-detail {
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .movie-detail img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .movie-detail h2 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .movie-detail p {
+            color: #666;
+            font-size: 1.1em;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎬 Gestión de Películas - Nuestro Netflix</h1>
+        <div id="main"></div>
+    </div>
+
+    <script>
+        // ==================== MODELO ====================
+        
+        // Películas iniciales por defecto
+        const peliculasIniciales = [
+            {
+                titulo: "El Padrino",
+                director: "Francis Ford Coppola",
+                miniatura: "https://images.unsplash.com/photo-1594909122845-11baa439b7bf?w=300&h=450&fit=crop"
+            },
+            {
+                titulo: "Pulp Fiction",
+                director: "Quentin Tarantino",
+                miniatura: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=300&h=450&fit=crop"
+            },
+            {
+                titulo: "El Caballero Oscuro",
+                director: "Christopher Nolan",
+                miniatura: "https://images.unsplash.com/photo-1509347528160-9a9e33742cdb?w=300&h=450&fit=crop"
+            },
+            {
+                titulo: "Forrest Gump",
+                director: "Robert Zemeckis",
+                miniatura: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=300&h=450&fit=crop"
+            },
+            {
+                titulo: "Matrix",
+                director: "Hermanas Wachowski",
+                miniatura: "https://images.unsplash.com/photo-1518676590629-3dcbd9c5a5c9?w=300&h=450&fit=crop"
+            },
+            {
+                titulo: "Inception",
+                director: "Christopher Nolan",
+                miniatura: "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=300&h=450&fit=crop"
+            }
+        ];
+
+        // Funciones del Modelo
+        function obtenerPeliculas() {
+            const peliculas = localStorage.getItem('mis_peliculas');
+            if (!peliculas) {
+                localStorage.setItem('mis_peliculas', JSON.stringify(peliculasIniciales));
+                return peliculasIniciales;
+            }
+            return JSON.parse(peliculas);
+        }
+
+        function guardarPeliculas(peliculas) {
+            localStorage.setItem('mis_peliculas', JSON.stringify(peliculas));
+        }
+
+        function obtenerPelicula(index) {
+            const peliculas = obtenerPeliculas();
+            return peliculas[index];
+        }
+
+        function actualizarPelicula(index, pelicula) {
+            const peliculas = obtenerPeliculas();
+            peliculas[index] = pelicula;
+            guardarPeliculas(peliculas);
+        }
+
+        function crearPelicula(pelicula) {
+            const peliculas = obtenerPeliculas();
+            peliculas.push(pelicula);
+            guardarPeliculas(peliculas);
+        }
+
+        function eliminarPelicula(index) {
+            const peliculas = obtenerPeliculas();
+            peliculas.splice(index, 1);
+            guardarPeliculas(peliculas);
+        }
+
+        function resetearPeliculas() {
+            localStorage.setItem('mis_peliculas', JSON.stringify(peliculasIniciales));
+        }
+
+        // ==================== VISTAS ====================
+
+        // Vista principal: muestra todas las películas
+        function indexView(peliculas) {
+            let html = '<div class="action-buttons">';
+            html += '<button class="btn-new new">➕ Añadir Película</button>';
+            html += '<button class="btn-reset reset">🔄 Reset</button>';
+            html += '</div>';
+            
+            html += '<div class="movie-grid">';
+            
+            peliculas.forEach((pelicula, index) => {
+                html += `
+                    <div class="movie-card">
+                        <img src="${pelicula.miniatura}" alt="${pelicula.titulo}">
+                        <h3>${pelicula.titulo}</h3>
+                        <div class="movie-actions">
+                            <button class="btn-show show" data-my-id="${index}">👁️ Ver</button>
+                            <button class="btn-edit edit" data-my-id="${index}">✏️ Editar</button>
+                            <button class="btn-delete delete" data-my-id="${index}">🗑️ Borrar</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            
+            document.getElementById('main').innerHTML = html;
+        }
+
+        // Vista de detalle: muestra información completa de una película
+        function showView(pelicula) {
+            const html = `
+                <div class="movie-detail">
+                    <img src="${pelicula.miniatura}" alt="${pelicula.titulo}">
+                    <h2>${pelicula.titulo}</h2>
+                    <p><strong>Director:</strong> ${pelicula.director}</p>
+                    <button class="btn-back index">⬅️ Volver</button>
+                </div>
+            `;
+            
+            document.getElementById('main').innerHTML = html;
+        }
+
+        // Vista de edición: formulario para editar una película
+        function editView(index, pelicula) {
+            const html = `
+                <div class="form-container">
+                    <h2>Editar Película</h2>
+                    <div class="form-group">
+                        <label for="titulo">Título:</label>
+                        <input type="text" id="titulo" value="${pelicula.titulo}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="director">Director:</label>
+                        <input type="text" id="director" value="${pelicula.director}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="miniatura">URL Miniatura:</label>
+                        <input type="text" id="miniatura" value="${pelicula.miniatura}" required>
+                    </div>
+                    <div class="form-actions">
+                        <button class="btn-update update" data-my-id="${index}">💾 Actualizar</button>
+                        <button class="btn-back index">❌ Cancelar</button>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('main').innerHTML = html;
+        }
+
+        // Vista de creación: formulario para añadir una nueva película
+        function newView() {
+            const html = `
+                <div class="form-container">
+                    <h2>Añadir Nueva Película</h2>
+                    <div class="form-group">
+                        <label for="titulo">Título:</label>
+                        <input type="text" id="titulo" placeholder="Ej: El Padrino" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="director">Director:</label>
+                        <input type="text" id="director" placeholder="Ej: Francis Ford Coppola" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="miniatura">URL Miniatura:</label>
+                        <input type="text" id="miniatura" placeholder="https://ejemplo.com/imagen.jpg" required>
+                    </div>
+                    <div class="form-actions">
+                        <button class="btn-create create">➕ Crear</button>
+                        <button class="btn-back index">❌ Cancelar</button>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('main').innerHTML = html;
+        }
+
+        // ==================== CONTROLADORES ====================
+
+        // Controlador principal: muestra la lista de películas
+        function indexContr() {
+            const peliculas = obtenerPeliculas();
+            indexView(peliculas);
+        }
+
+        // Controlador de mostrar detalle
+        function showContr(index) {
+            const pelicula = obtenerPelicula(index);
+            showView(pelicula);
+        }
+
+        // Controlador de edición: muestra el formulario de edición
+        function editContr(index) {
+            const pelicula = obtenerPelicula(index);
+            editView(index, pelicula);
+        }
+
+        // Controlador de actualización: guarda los cambios de edición
+        function updateContr(index) {
+            const titulo = document.getElementById('titulo').value;
+            const director = document.getElementById('director').value;
+            const miniatura = document.getElementById('miniatura').value;
+            
+            if (titulo && director && miniatura) {
+                const pelicula = { titulo, director, miniatura };
+                actualizarPelicula(index, pelicula);
+                indexContr();
+            } else {
+                alert('Por favor, completa todos los campos');
+            }
+        }
+
+        // Controlador de nueva película: muestra el formulario de creación
+        function newContr() {
+            newView();
+        }
+
+        // Controlador de creación: añade una nueva película
+        function createContr() {
+            const titulo = document.getElementById('titulo').value;
+            const director = document.getElementById('director').value;
+            const miniatura = document.getElementById('miniatura').value;
+            
+            if (titulo && director && miniatura) {
+                const pelicula = { titulo, director, miniatura };
+                crearPelicula(pelicula);
+                indexContr();
+            } else {
+                alert('Por favor, completa todos los campos');
+            }
+        }
+
+        // Controlador de eliminación: borra una película
+        function deleteContr(index) {
+            const pelicula = obtenerPelicula(index);
+            if (confirm(`¿Estás seguro de que quieres eliminar "${pelicula.titulo}"?`)) {
+                eliminarPelicula(index);
+                indexContr();
+            }
+        }
+
+        // Controlador de reset: restaura las películas iniciales
+        function resetContr() {
+            if (confirm('¿Estás seguro de que quieres restaurar la base de datos a su estado inicial? Se perderán todos los cambios.')) {
+                resetearPeliculas();
+                indexContr();
+            }
+        }
+
+        // ==================== ROUTER ====================
+
+        // Router: maneja los eventos de clic y llama a los controladores
+        function router(event) {
+            const target = event.target;
+            
+            // Evento: volver a la vista principal
+            if (target.classList.contains('index')) {
+                indexContr();
+            }
+            // Evento: mostrar detalle de película
+            else if (target.classList.contains('show')) {
+                const index = parseInt(target.getAttribute('data-my-id'));
+                showContr(index);
+            }
+            // Evento: editar película
+            else if (target.classList.contains('edit')) {
+                const index = parseInt(target.getAttribute('data-my-id'));
+                editContr(index);
+            }
+            // Evento: actualizar película
+            else if (target.classList.contains('update')) {
+                const index = parseInt(target.getAttribute('data-my-id'));
+                updateContr(index);
+            }
+            // Evento: nueva película
+            else if (target.classList.contains('new')) {
+                newContr();
+            }
+            // Evento: crear película
+            else if (target.classList.contains('create')) {
+                createContr();
+            }
+            // Evento: eliminar película
+            else if (target.classList.contains('delete')) {
+                const index = parseInt(target.getAttribute('data-my-id'));
+                deleteContr(index);
+            }
+            // Evento: reset
+            else if (target.classList.contains('reset')) {
+                resetContr();
+            }
+        }
+
+        // ==================== INICIALIZACIÓN ====================
+
+        // Añadir el event listener al documento
+        document.addEventListener('click', router);
+
+        // Cargar la vista principal al iniciar
+        indexContr();
+    </script>
+</body>
+</html>
